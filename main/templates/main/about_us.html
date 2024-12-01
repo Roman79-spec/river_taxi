@@ -1,0 +1,13 @@
+{% extends 'main/prototype.html' %}
+
+{% block title %}Про нас{% endblock %}
+
+{% block content %}
+    <div class="features">
+        <h1>Про нас</h1>
+        <p>Пора очей очарования</p>
+        <a href="{% url 'about' %}">
+            <button class="btn btn-danger">Просто нажми</button>
+        </a>
+    </div>
+{% endblock %}

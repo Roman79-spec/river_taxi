@@ -5,26 +5,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="{% static 'main/css/styles.css' %}">
 
     <title>{% block title %}{% endblock %}</title>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=56a4e383-64a7-45b3-9c3d-e7ec08be54ee&lang=ru_RU" type="text/javascript"></script>
-    <link rel="icon" href="" sizes="32x32" type="image/x-icon">
+    <link rel="icon" href="{% static 'main/img/HaronMoscov_logo.png' %}" sizes="32x32" type="image/x-icon">
+
 
 </head>
-<body>
+<body><body class="{% block body_class %}{% endblock %}">
     <aside>
-      <img src="{% static 'main/img/HaronMoscov.png' %}" alt="Логотип"><br>
+      <img src="{% static 'main/img/HaronMoscov.png' %}" alt="Логотип">
       <h3>Навигация</h3>
       <ul>
-        <a href=""><li><i class="fa-solid fa-house"></i><b>Главная</b></li></a>
-        <a href=""><li><i class="fa-solid fa-info"></i><b>О нас</b></li></a>
-        <a href=""><li><i class="fa-regular fa-address-book"></i><b>Контакты</b></li></a>
+        <ul>
+            <li><a href="{% url 'home' %}"><i class="fa-solid fa-house"></i><b> Главная</b></a></li>
+            <li><a href="{% url 'about' %}"><i class="fa-regular fa-address-card"></i><b> О нас</b></a></li>
+            <li><a href=""><i class="fa-regular fa-address-book"></i><b> Контакты</b></a></li>
+            <li>
+              <button class="btn btn-primary" data-toggle="modal" data-target="#registrationModal">
+                  <i class="fa fa-user-plus"></i> Регистрация
+              </button>
+          </li>
+        </ul>
+        
       </ul>
     </aside>
     <main>
         {% block content %}
-        {% endblock %}
+        {% endblock %} 
     </main>
+     <!-- Модальное окно для регистрации -->
+     <div class="modal fade" id="registrationModal" tabindex="-1" role="dialog" aria-labelledby="registrationModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="registrationModalLabel">Регистрация</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <form method="POST" action="{% url 'register' %}">
+                      {% csrf_token %}
+                      <div class="form-group">
+                          <label for="username">Имя пользователя</label>
+                          <input type="text" class="form-control" id="username" name="username" required>
+                      </div>
+                      <div class="form-group">
+                          <label for="password">Пароль</label>
+                          <input type="password" class="form-control" id="password" name="password" required>
+                      </div>
+                      <div class="form-group">
+                          <label for="email">Электронная почта</label>
+                          <input type="email" class="form-control" id="email" name="email" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  
+
+  <!-- Подключение Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector("#registrationForm");
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();  // Отключаем стандартную отправку формы
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect_url;  // Перенаправление в профиль
+                }
+            })
+            .catch(async (error) => {
+                const errors = await error;
+                const errorContainer = document.createElement("div");
+                errorContainer.classList.add("alert", "alert-danger");
+                errorContainer.innerHTML = Object.values(errors.errors)
+                    .flat()
+                    .map(err => `<p>${err}</p>`)
+                    .join("");
+                form.querySelector(".modal-body").prepend(errorContainer);
+            });
+        });
+    });
+</script>
+</body>
+</html>
+        
     
 </body>
